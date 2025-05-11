@@ -34,9 +34,6 @@ public class PaymentOptimizer {
                     BigDecimal pointsPart = points.getLimit().min(originalValue.multiply(BigDecimal.valueOf(0.9)));
                     BigDecimal restToPay = originalValue.multiply(BigDecimal.valueOf(0.9)).subtract(pointsPart);
                     if (restToPay.compareTo(BigDecimal.ZERO) < 0) continue;
-
-                    //BigDecimal afterDiscount = originalValue.multiply(BigDecimal.valueOf(0.9));
-                    //BigDecimal TraditionalSpending = afterDiscount.subtract(points.getLimit());
                     if (method.canAfford(restToPay)) {
                         BigDecimal totalPaid = pointsPart.add(restToPay);
                         options.add(new PaymentOption(
