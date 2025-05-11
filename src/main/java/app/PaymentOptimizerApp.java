@@ -32,10 +32,12 @@ public class PaymentOptimizerApp {
                 PaymentOption paymentOption = option.get();
                 for (String method : option.get().getMethods()) {
                     if (method.equals("PUNKTY")) {
-                        spent.merge(method, paymentOption.getFinalCost().subtract(paymentOption.getTraditionalSpending()), BigDecimal::add);
+                        spent.merge(method, paymentOption.getPointsSpent(), BigDecimal::add);
+                        paymentOptimizer.subtractLimit(method, paymentOption.getPointsSpent());
                     }
                     else {
                         spent.merge(method, paymentOption.getTraditionalSpending(), BigDecimal::add);
+                        paymentOptimizer.subtractLimit(method, paymentOption.getTraditionalSpending());
                     }
                 }
             }

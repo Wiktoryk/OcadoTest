@@ -7,17 +7,20 @@ public class PaymentOption {
     private final List<String> methods;
     private final BigDecimal finalCost;
     private final BigDecimal originalValue;
+    private final BigDecimal pointsSpent;
 
-    public PaymentOption(String method, BigDecimal finalPrice, BigDecimal originalValue) {
+    public PaymentOption(String method, BigDecimal finalPrice, BigDecimal originalValue, BigDecimal pointsSpent) {
         this.methods = List.of(method);
         this.finalCost = finalPrice;
         this.originalValue = originalValue;
+        this.pointsSpent = pointsSpent;
     }
 
-    public PaymentOption(List<String> methods, BigDecimal finalPrice, BigDecimal originalValue) {
+    public PaymentOption(List<String> methods, BigDecimal finalPrice, BigDecimal originalValue, BigDecimal pointsSpent) {
         this.methods = methods;
         this.finalCost = finalPrice;
         this.originalValue = originalValue;
+        this.pointsSpent = pointsSpent;
     }
 
     public BigDecimal getDiscountAmount() {
@@ -36,9 +39,13 @@ public class PaymentOption {
         return originalValue;
     }
 
+    public BigDecimal getPointsSpent() {
+        return pointsSpent;
+    }
+
     public BigDecimal getTraditionalSpending() {
         if (methods.contains("PUNKTY") && methods.size() == 2) {
-            return finalCost.subtract(originalValue.multiply(BigDecimal.valueOf(0.1)));
+            return finalCost.subtract(pointsSpent);
         }
         else if (methods.contains("PUNKTY")) {
             return BigDecimal.ZERO;

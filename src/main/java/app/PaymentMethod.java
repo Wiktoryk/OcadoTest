@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PaymentMethod {
-    private String ID;
-    private BigDecimal discount;
+    private final String ID;
+    private final BigDecimal discount;
     private BigDecimal limit;
 
     @JsonCreator

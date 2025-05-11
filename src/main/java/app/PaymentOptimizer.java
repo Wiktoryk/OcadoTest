@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class PaymentOptimizer {
-    private final Map<String, PaymentMethod> availableMethods;
+    private Map<String, PaymentMethod> availableMethods;
 
     public PaymentOptimizer(List<PaymentMethod> methods) {
         this.availableMethods = new HashMap<>();
@@ -19,22 +19,28 @@ public class PaymentOptimizer {
 
         //tylko pkt
         PaymentMethod points = availableMethods.get("PUNKTY");
-        if (points != null && points.getLimit().compareTo(originalValue) >= 0) {
+        if (points != null && points.canAfford(originalValue.multiply(BigDecimal.ONE.subtract(points.getDiscountPercent())))) {
             BigDecimal discount = points.getDiscountPercent();
             BigDecimal finalPrice = originalValue.multiply(BigDecimal.ONE.subtract(discount));
-            options.add(new PaymentOption("PUNKTY", finalPrice, originalValue));
+            options.add(new PaymentOption("PUNKTY", finalPrice.setScale(2), originalValue.setScale(2), finalPrice.setScale(2)));
         }
 
         //mieszane
-        if (points != null) {
-            BigDecimal tenPercent = originalValue.multiply(BigDecimal.valueOf(0.1));
-            if (points.getLimit().compareTo(tenPercent) >= 0) {
+        else if (points != null && points.getLimit().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal tenPercent = originalValue.multiply(BigDecimal.valueOf(0.09));
+            if (points.canAfford(tenPercent)) {
                 for (PaymentMethod method : availableMethods.values()) {
                     if (method.getID().equals("PUNKTY")) continue;
-                    BigDecimal afterDiscount = originalValue.multiply(BigDecimal.valueOf(0.9));
-                    if (method.getLimit().compareTo(afterDiscount.subtract(tenPercent)) >= 0) {
+                    BigDecimal pointsPart = points.getLimit().min(originalValue.multiply(BigDecimal.valueOf(0.9)));
+                    BigDecimal restToPay = originalValue.multiply(BigDecimal.valueOf(0.9)).subtract(pointsPart);
+                    if (restToPay.compareTo(BigDecimal.ZERO) < 0) continue;
+
+                    //BigDecimal afterDiscount = originalValue.multiply(BigDecimal.valueOf(0.9));
+                    //BigDecimal TraditionalSpending = afterDiscount.subtract(points.getLimit());
+                    if (method.canAfford(restToPay)) {
+                        BigDecimal totalPaid = pointsPart.add(restToPay);
                         options.add(new PaymentOption(
-                                Arrays.asList("PUNKTY", method.getID()),originalValue.multiply(BigDecimal.valueOf(0.9)), originalValue));
+                                Arrays.asList("PUNKTY", method.getID()),totalPaid.setScale(2), originalValue.setScale(2), pointsPart.setScale(2)));
                     }
                 }
             }
@@ -43,15 +49,19 @@ public class PaymentOptimizer {
         //karta
         for (PaymentMethod method : availableMethods.values()) {
             if (method.getID().equals("PUNKTY")) continue;
-            if (method.getLimit().compareTo(originalValue) >= 0) {
+            if (method.canAfford(originalValue)) {
                 BigDecimal discount = BigDecimal.ZERO;
                 if (order.getPromotions().contains(method.getID())) {
                     discount = method.getDiscountPercent();
                 }
                 BigDecimal finalPrice = originalValue.multiply(BigDecimal.ONE.subtract(discount));
-                options.add(new PaymentOption(method.getID(), finalPrice, originalValue));
+                options.add(new PaymentOption(method.getID(), finalPrice.setScale(2), originalValue.setScale(2), BigDecimal.ZERO));
             }
         }
         return options.stream().sorted(Comparator.comparing(PaymentOption::getDiscountAmount).reversed().thenComparing(PaymentOption::getTraditionalSpending)).findFirst();
+    }
+
+    public void subtractLimit(String id, BigDecimal amount) {
+        availableMethods.get(id).subtractFromLimit(amount);
     }
 }

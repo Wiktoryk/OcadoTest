@@ -1,6 +1,5 @@
 package app;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -11,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PaymentOptionTest {
     @Test
     void testPaymentOptionSingle() throws Exception {
-        PaymentOption option = new PaymentOption("PUNKTY", BigDecimal.valueOf(90.00), BigDecimal.valueOf(100.00));
+        PaymentOption option = new PaymentOption("PUNKTY", BigDecimal.valueOf(90.00), BigDecimal.valueOf(100.00), BigDecimal.valueOf(100.00));
 
         assertNotNull(option.getMethods());
         assertEquals(1, option.getMethods().size());
@@ -20,10 +19,11 @@ public class PaymentOptionTest {
         assertEquals(BigDecimal.valueOf(90.00), option.getFinalCost());
         assertEquals(BigDecimal.valueOf(10.00), option.getDiscountAmount());
         assertEquals(BigDecimal.ZERO, option.getTraditionalSpending());
+        assertEquals(BigDecimal.valueOf(100.00), option.getPointsSpent());
     }
     @Test
     void testPaymentOptionMultiple() throws Exception {
-        PaymentOption option = new PaymentOption(List.of("PUNKTY", "mZysk"), BigDecimal.valueOf(90.00), BigDecimal.valueOf(100.00));
+        PaymentOption option = new PaymentOption(List.of("PUNKTY", "mZysk"), BigDecimal.valueOf(90.00), BigDecimal.valueOf(100.00), BigDecimal.valueOf(100.00));
 
         assertNotNull(option.getMethods());
         assertEquals(2, option.getMethods().size());
@@ -33,5 +33,6 @@ public class PaymentOptionTest {
         assertEquals(BigDecimal.valueOf(90.00), option.getFinalCost());
         assertEquals(BigDecimal.valueOf(10.00), option.getDiscountAmount());
         assertNotEquals(BigDecimal.ZERO, option.getTraditionalSpending());
+        assertEquals(BigDecimal.valueOf(100.00), option.getPointsSpent());
     }
 }
